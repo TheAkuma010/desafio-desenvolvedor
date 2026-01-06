@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
+use App\Http\Controllers\Api\FileController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -32,4 +33,8 @@ Route::post('/login', function (Request $request) {
         'message' => 'Login realizado com sucesso.',
         'token' => $token
     ]);
+});
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/upload', [FileController::class, 'upload']);
 });
