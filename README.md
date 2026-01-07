@@ -1,52 +1,140 @@
-<p>
-    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcQIAOtqQ5is5vwbcEn0ZahZfMxz1QIeAYtFfnLdkCXu1sqAGbnX" width="300">
- </p>
- 
-### A Oliveira Trust:
-A Oliveira Trust é uma das maiores empresas do setor Financeiro com muito orgulho, desde 1991, realizamos as maiores transações do mercado de Títulos e Valores Mobiliários.
+# Desafio Desenvolvedor - Oliveira Trust (API de Instrumentos Financeiros)
 
-Somos uma empresa em que valorizamos o nosso colaborador em primeiro lugar, sempre! Alinhando isso com a nossa missão "Promover a satisfação dos nossos clientes e o desenvolvimento pessoal e profissional da nossa equipe", estamos construindo times excepcionais em Tecnologia, Comercial, Engenharia de Software, Produto, Financeiro, Jurídico e Data Science.
+Este projeto consiste em uma API RESTful robusta para ingestão, processamento e consulta de grandes volumes de dados financeiros (arquivos da B3 com +300.000 linhas).
 
-Estamos buscando uma pessoa que seja movida a desafios, que saiba trabalhar em equipe e queira revolucionar o mercado financeiro!
+O foco principal do desenvolvimento foi **performance, escalabilidade e integridade de dados**, garantindo que o sistema processe arquivos pesados sem comprometer a memória do servidor ou a experiência do usuário.
 
-Front-end? Back-end? Full Stack? Analista de dados? Queremos conhecer gente boa, que goste de colocar a mão na massa, seja responsável e queira fazer história!
+## Tecnologias Utilizadas
 
-#### O que você precisa saber para entrar no nosso time: 🚀
-- Trabalhar com frameworks (Laravel, Lumen, Yii, Cake, Symfony ou outros...)
-- Banco de dados relacional (MySql, MariaDB)
-- Trabalhar com microsserviços
+* **Linguagem:** PHP 8
+* **Framework:** Laravel 12
+* **Banco de Dados:** MySQL 8.4
+* **Ambiente:** Docker (via Laravel Sail)
+* **Leitura de Arquivos:** OpenSpout v4 (Leitura via Streaming para baixo consumo de RAM)
+* **Assincronismo:** Laravel Jobs & Queues (Database Driver)
+* **Cache:** Redis/File Cache
+* **Autenticação:** Laravel Sanctum
 
-#### O que seria legal você saber também: 🚀
-- Conhecimento em banco de dados não relacional;
-- Conhecimento em docker;
-- Conhecimento nos serviços da AWS (RDS, DynamoDB, DocumentDB, Elasticsearch);
-- Conhecimento em metodologias ágeis (Scrum/Kanban);
+---
 
-#### Ao entrar nessa jornada com o nosso time, você vai: 🚀
-- Trabalhar em uma equipe de tecnologia, em um ambiente leve e descontraído e vivenciar a experiência de mudar o mercado financeiro;
-- Dress code da forma que você se sentir mais confortável;
-- Flexibilidade para home office e horários;
-- Acesso a cursos patrocinados pela empresa;
+## Decisões de Arquitetura
 
-#### Benefícios 🚀
-- Salário compatível com o mercado;
-- Vale Refeição (CAJU);
-- Vale Alimentação (CAJU);
-- Vale Transporte ou Vale Combustível (CAJU);
-- Plano de Saúde e Odontológico;
-- Seguro de vida;
-- PLR Semestral;
-- Horário Flexível;
-- Parcerias em farmácias
+Para atender aos requisitos de processar arquivos com grandes volumes de linhas e garantir buscas rápidas, foram tomadas as seguintes decisões:
 
-#### Local: 🚀
-Barra da Tijuca, Rio de Janeiro, RJ
+1.  **Processamento em Background (Jobs):**
+    * O upload do arquivo apenas salva o CSV/Excel em disco e libera o usuário imediatamente.
+    * O processamento pesado ocorre em uma **Fila (Queue)**, evitando *timeouts* no navegador e gargalos no servidor HTTP.
 
-#### Conheça mais sobre nós! :sunglasses:
-- Website (https://www.oliveiratrust.com.br/)
-- LinkedIn (https://www.linkedin.com/company/oliveiratrust/)
+2.  **Leitura em Streaming (OpenSpout):**
+    * Em vez de carregar o arquivo inteiro na memória (o que travaria o servidor com arquivos grandes), utilizei o **OpenSpout** para ler linha a linha e preparar para inserir em batch. Isso mantém o uso de RAM baixo e constante, independente se o arquivo tem 100 linhas ou 1 milhão.
 
-A Oliveira Trust acredita na inclusão e na promoção da diversidade em todas as suas formas. Temos como valores o respeito e valorização das pessoas e combatemos qualquer tipo de discriminação. Incentivamos a todos que se identifiquem com o perfil e requisitos das vagas disponíveis que candidatem, sem qualquer distinção.
+3.  **Otimização de Banco de Dados:**
+    * Criação de **Índices (Indexes)** nas colunas `tckr_symb` e `rpt_dt`.
+    * Uso de `Insert Batch` (lotes de 1.000 registros) para reduzir a carga do banco de dados, resultando em uma importação média de 1.500 registros/segundo.
 
-## Pronto para o desafio? 🚀🚀🚀🚀
-https://github.com/Oliveira-Trust/desafio-desenvolvedor/blob/master/vaga3.md
+4.  **Cache Inteligente:**
+    * O endpoint de busca utiliza cache. Consultas repetidas retornam instantaneamente, aliviando o banco de dados de fazer consultas repetidas.
+
+5.  **Padronização de Saída (API Resources):**
+    * Utilização de *API Resources* para transformar os dados do banco (`snake_case`) no padrão exigido pelo desafio (`PascalCase`), desacoplando a lógica do banco da interface da API.
+
+---
+
+## Instalação e Configuração
+
+O projeto utiliza **Docker**. Certifique-se de tê-lo instalado.
+Será necessário `sail` no terminal, é possível criar um alias caso deseje.
+
+1.  **Clone o repositório:**
+    ```bash
+    git clone https://github.com/TheAkuma010/desafio-desenvolvedor.git
+    cd desafio-desenvolvedor
+    ```
+
+2.  **Configure as variáveis de ambiente:**
+    ```bash
+    cp .env.example .env
+    ```
+    *Certifique-se de que `QUEUE_CONNECTION=database` está definido no .env.*
+
+3.  **Suba os containers (Docker):**
+    ```bash
+    ./vendor/bin/sail up -d
+    ```
+
+4.  **Instale as dependências:**
+    ```bash
+    ./vendor/bin/sail composer install
+    ```
+
+5.  **Prepare o Banco de Dados:**
+    ```bash
+    ./vendor/bin/sail artisan migrate --seed
+    ```
+    *O comando `--seed` criará um usuário padrão para testes.*
+
+---
+
+## Como Rodar a Aplicação
+
+Para que o sistema funcione corretamente, você precisa de **dois terminais** rodando:
+
+1.  **Terminal 1 (Aplicação):** Onde o Docker estará rodando.
+2.  **Terminal 2 (Processador de Filas):** Deve ser usado para que os arquivos enviados sejam processados.
+    ```bash
+    ./vendor/bin/sail artisan queue:work
+    ```
+
+---
+
+## Autenticação e Testes
+
+A API é protegida via Token (Sanctum). Adicione o header `Accept: application/json` em todas as requisições para obter o retorno em JSON correto.
+
+### 1. Obter Token de Acesso
+Utilize o usuário criado pelo seeder:
+
+* **Rota:** `POST /api/login`
+* **Body:**
+    ```json
+    {
+        "email": "admin@admin.com.br",
+        "password": "admin12345"
+    }
+    ```
+* **Resposta:** Copie o `token` retornado.
+
+Use este token no Header das próximas requisições:
+`Authorization: Bearer 1|seu_token_aqui...`
+
+### 2. Upload de Arquivo
+* **Rota:** `POST /api/upload`
+* **Body:** `multipart/form-data` com campo `file`.
+* **Formatos aceitos:** .csv, .xlsx, .xls.
+* *Nota: O arquivo será colocado na fila e processado pelo worker ao usar o queue:work.*
+
+### 3. Histórico de Envios
+* **Rota:** `GET /api/history`
+* **Filtros (Parâmetros):** `file_name`, `date`.
+* **Exemplo:** `/api/history?date=2026-01-07&file_name=Instruments
+
+### 4. Busca de Instrumentos
+* **Rota:** `GET /api/instruments`
+* **Filtros (Parâmetros):** `TckrSymb`, `RptDt`.
+* **Exemplo:** `/api/instruments?TckrSymb=AMZO34&RptDt=2024-08-26`
+
+---
+
+## Testes de Qualidade
+
+Durante o desenvolvimento, foram validados os seguintes cenários:
+* [x] Upload de arquivos Excel (.xlsx) e CSV.
+* [x] Bloqueio de arquivos duplicados (via Hash MD5).
+* [x] Validação de cabeçalho (Rejeita arquivos que não tenham a coluna "RptDt").
+* [x] Validação de formatos inválidos (PDF, Imagens).
+* [x] Performance com arquivo de 300.000+ linhas (Tempo médio: ~3 min em ambiente Docker local).
+
+---
+
+Desenvolvido por **Gabriel Torres da Costa**
+[https://linkedin.com/in/gabriel-t-costa]
