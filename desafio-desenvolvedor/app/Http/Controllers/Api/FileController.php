@@ -13,7 +13,7 @@ class FileController extends Controller
     {
         // lógica para upload de arquivo + evitar arquivos duplicados
         $request->validate([
-            'file' => 'required|file|mimes:csv,xlsx,xls|max:102400', // 100MB
+            'file' => 'required|file|mimes:csv,txt,xlsx,xls|max:102400', // 100MB
         ]);
 
         $file = $request->file('file');
