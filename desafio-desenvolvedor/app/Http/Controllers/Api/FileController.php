@@ -34,6 +34,9 @@ class FileController extends Controller
             'status' => 'PENDING',
         ]);
 
+        // disparar job de processamento do arquivo
+        ProcessFileJob::dispatch($upload, $path);
+
         return response()->json([
             'message' => 'Arquivo enviado com sucesso. Processamento em andamento.',
             'upload_id' => $upload->id,
