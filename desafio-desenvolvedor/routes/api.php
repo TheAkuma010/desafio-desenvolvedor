@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use App\Http\Controllers\Api\FileController;
+use App\Http\Controllers\Api\InstrumentController;
 
 Route::post('/login', function (Request $request) {
     $request->validate([
@@ -34,4 +35,5 @@ Route::post('/login', function (Request $request) {
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/upload', [FileController::class, 'upload']);
     Route::get('/history', [FileController::class, 'history']);
+    Route::get('/instruments', [InstrumentController::class, 'index']);
 });
