@@ -35,7 +35,7 @@ class InstrumentController extends Controller
                 return $q->where('rpt_dt', $request->RptDt);
             });
 
-            $query->orderBy('id', 'asc');
+            $query->orderBy('rpt_dt', 'desc');
 
             return $query->paginate(15);
         });
