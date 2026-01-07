@@ -46,4 +46,24 @@ class FileController extends Controller
             'upload_id' => $upload->id,
         ], 201);
     }
+
+    public function history(Request $request)
+    {
+        $query = FileUpload::query();
+
+        // filtro por nome do arquivo
+        $query->when($request->file_name, function($q) use ($request) {
+            return $q->where('file_name', 'like', '%' . $request->file_name . '%');
+        });
+
+        // filtro por data de upload
+        $query->when($request->date, function ($q) use ($request) {
+            return $q->whereDate('created_at', $request->date);
+        });
+
+        // mais recentes primeiro
+        $results = $query->orderBy('created_at', 'desc')->paginate(10);
+
+        return response()->json($results);
+    }
 }

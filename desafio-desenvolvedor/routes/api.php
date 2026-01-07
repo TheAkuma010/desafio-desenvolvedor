@@ -7,10 +7,6 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use App\Http\Controllers\Api\FileController;
 
-Route::get('/user', function (Request $request) {
-    return $request->user();
-})->middleware('auth:sanctum');
-
 Route::post('/login', function (Request $request) {
     $request->validate([
         'email' => 'required|email',
@@ -37,4 +33,5 @@ Route::post('/login', function (Request $request) {
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/upload', [FileController::class, 'upload']);
+    Route::get('/history', [FileController::class, 'history']);
 });
