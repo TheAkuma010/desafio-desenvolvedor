@@ -33,7 +33,7 @@ class FileController extends Controller
         $path = $file->storeAs('uploads', $filename);
 
         $upload = FileUpload::create([
-            'filename' => $file->getClientOriginalName(),
+            'file_name' => $file->getClientOriginalName(),
             'file_hash' => $hash,
             'status' => 'PENDING',
         ]);
