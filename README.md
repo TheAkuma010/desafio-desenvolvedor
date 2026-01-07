@@ -42,12 +42,14 @@ Para atender aos requisitos de processar arquivos com grandes volumes de linhas 
 
 ## Instalação e Configuração
 
-O projeto utiliza **Docker**. Certifique-se de tê-lo instalado.
-Será necessário `sail` no terminal, é possível criar um alias caso deseje.
+O projeto foi containerizado usando **Docker**. Certifique-se de tê-lo instalado.
+Será necessário usar `sail` no terminal, é possível criar um alias caso deseje.
 
 1.  **Clone o repositório:**
     ```bash
     git clone https://github.com/TheAkuma010/desafio-desenvolvedor.git
+    cd desafio-desenvolvedor
+    git checkout Gabriel_Torres_da_Costa
     cd desafio-desenvolvedor
     ```
 
@@ -57,22 +59,32 @@ Será necessário `sail` no terminal, é possível criar um alias caso deseje.
     ```
     *Certifique-se de que `QUEUE_CONNECTION=database` está definido no .env.*
 
-3.  **Suba os containers (Docker):**
+3.  **Instale as dependências:**
+    ```bash
+    docker run --rm \
+        -u "$(id -u):$(id -g)" \
+        -v "$(pwd):/var/www/html" \
+        -w /var/www/html \
+        laravelsail/php84-composer:latest \
+        composer install --ignore-platform-reqs
+    ```
+
+4.  **Suba os containers:**
     ```bash
     ./vendor/bin/sail up -d
     ```
 
-4.  **Instale as dependências:**
+5.  **Configuração final (key e banco de dados):**
     ```bash
-    ./vendor/bin/sail composer install
-    ```
-
-5.  **Prepare o Banco de Dados:**
-    ```bash
+    ./vendor/bin/sail artisan key:generate
     ./vendor/bin/sail artisan migrate --seed
     ```
     *O comando `--seed` criará um usuário padrão para testes.*
 
+6.  **Inicie o processador de filas:**
+    ```bash
+    ./vendor/bin/sail artisan queue:work
+    ```
 ---
 
 ## Como Rodar a Aplicação
@@ -81,15 +93,12 @@ Para que o sistema funcione corretamente, você precisa de **dois terminais** ro
 
 1.  **Terminal 1 (Aplicação):** Onde o Docker estará rodando.
 2.  **Terminal 2 (Processador de Filas):** Deve ser usado para que os arquivos enviados sejam processados.
-    ```bash
-    ./vendor/bin/sail artisan queue:work
-    ```
 
 ---
 
 ## Autenticação e Testes
 
-A API é protegida via Token (Sanctum). Adicione o header `Accept: application/json` em todas as requisições para obter o retorno em JSON correto.
+A API é protegida via Token (Sanctum). Adicione o header `Accept: application/json` em todas as requisições para obter o retorno em JSON.
 
 ### 1. Obter Token de Acesso
 Utilize o usuário criado pelo seeder:
@@ -110,7 +119,7 @@ Use este token no Header das próximas requisições:
 ### 2. Upload de Arquivo
 * **Rota:** `POST /api/upload`
 * **Body:** `multipart/form-data` com campo `file`.
-* **Formatos aceitos:** .csv, .xlsx, .xls.
+* **Formatos aceitos:** .csv, .txt, .xlsx, .xls.
 * *Nota: O arquivo será colocado na fila e processado pelo worker ao usar o queue:work.*
 
 ### 3. Histórico de Envios
