@@ -11,7 +11,7 @@ class FileController extends Controller
     {
         // lógica para upload de arquivo + evitar arquivos duplicados
         $request->validate([
-            'file' => 'required|file|mimes:csv,txt|max:20480', // 20MB
+            'file' => 'required|file|mimes:csv,txt,xlsx,xls|max:51200', // 50MB
         ]);
 
         $file = $request->file('file');
@@ -26,7 +26,9 @@ class FileController extends Controller
         }
 
         // salvar arquivo no disco
-        $path = $file->storeAs('uploads', $hash . '.' . $file->getClientOriginalExtension());
+        $extension = $file->getClientOriginalExtension();
+        $filename = $hash . '.' . $extension;
+        $path = $file->storeAs('uploads', $filename);
 
         $upload = FileUpload::create([
             'filename' => $file->getClientOriginalName(),
@@ -35,7 +37,7 @@ class FileController extends Controller
         ]);
 
         // disparar job de processamento do arquivo
-        ProcessFileJob::dispatch($upload, $path);
+        ProcessFileJob::dispatch($upload);
 
         return response()->json([
             'message' => 'Arquivo enviado com sucesso. Processamento em andamento.',
