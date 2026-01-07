@@ -22,7 +22,9 @@ return new class extends Migration
             $table->string('crpn_nm')->nullable();
             $table->timestamps();
 
-            $table->index(['rpt_dt', 'tckr_symb']);
+            // indices para otimização de buscas
+            $table->index('rpt_dt');
+            $table->index('tckr_symb');
         });
     }
 
