@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('scty_ctgy_nm')->nullable();
             $table->string('isin')->nullable();
             $table->string('crpn_nm')->nullable();
+            $table->timestamps();
 
             $table->index(['rpt_dt', 'tckr_symb']);
         });
