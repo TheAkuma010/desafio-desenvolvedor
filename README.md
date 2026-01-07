@@ -116,7 +116,7 @@ Use este token no Header das próximas requisições:
 ### 3. Histórico de Envios
 * **Rota:** `GET /api/history`
 * **Filtros (Parâmetros):** `file_name`, `date`.
-* **Exemplo:** `/api/history?date=2026-01-07&file_name=Instruments
+* **Exemplo:** `/api/history?date=2026-01-07&file_name=Instruments`
 
 ### 4. Busca de Instrumentos
 * **Rota:** `GET /api/instruments`
