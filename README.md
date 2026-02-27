@@ -1,3 +1,7 @@
+Este Projeto foi desenvolvido como parte do processo seletivo para uma vaga de desenvolvedor back-end Laravel
+
+---
+
 # Desafio Desenvolvedor - Oliveira Trust (API de Instrumentos Financeiros)
 
 Este projeto consiste em uma API RESTful robusta para ingestão, processamento e consulta de grandes volumes de dados financeiros (arquivos da B3 com +300.000 linhas).
