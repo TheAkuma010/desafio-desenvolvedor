@@ -1,5 +1,3 @@
----
-
 # API de Instrumentos Financeiros
 
 Este projeto consiste em uma API RESTful robusta para ingestão, processamento e consulta de grandes volumes de dados financeiros (arquivos da B3 com +300.000 linhas).
